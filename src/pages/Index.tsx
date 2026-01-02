@@ -1,321 +1,391 @@
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
 
-interface SearchForm {
-  name: string;
-  country: string;
-  phone: string;
-}
-
-interface SearchResult {
-  id: string;
-  name: string;
-  age: number;
-  country: string;
-  city: string;
-  phone: string;
-  email: string;
-  socialMedia: {
-    facebook?: string;
-    instagram?: string;
-    linkedin?: string;
-    twitter?: string;
-  };
-  occupation: string;
-  education: string;
-  relatives: string[];
-}
+type Page = 'home' | 'leaderboard' | 'profile' | 'withdraw' | 'wallet';
 
 const Index = () => {
-  const [searchForm, setSearchForm] = useState<SearchForm>({
-    name: '',
-    country: '',
-    phone: ''
-  });
-  const [searchResult, setSearchResult] = useState<SearchResult | null>(null);
-  const [isSearching, setIsSearching] = useState(false);
-  const [searchHistory, setSearchHistory] = useState<Array<{name: string; date: string}>>([
-    { name: 'Алексей Петров', date: '2 часа назад' },
-    { name: 'Мария Иванова', date: '5 часов назад' },
-    { name: 'Дмитрий Сидоров', date: 'Вчера' }
-  ]);
+  const [page, setPage] = useState<Page>('home');
+  const [balance, setBalance] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [referralCode] = useState('REF' + Math.random().toString(36).substr(2, 6).toUpperCase());
+  const [referralEarnings] = useState(142.50);
 
-  const handleSearch = () => {
-    setIsSearching(true);
-    
-    setTimeout(() => {
-      setSearchResult({
-        id: '1',
-        name: searchForm.name || 'Иван Смирнов',
-        age: 32,
-        country: searchForm.country || 'Россия',
-        city: 'Москва',
-        phone: searchForm.phone || '+7 (999) 123-45-67',
-        email: 'ivan.smirnov@email.com',
-        socialMedia: {
-          facebook: 'facebook.com/ivansmirnov',
-          instagram: '@ivan_smirnov',
-          linkedin: 'linkedin.com/in/ivansmirnov',
-          twitter: '@ivan_sm'
-        },
-        occupation: 'Веб-разработчик',
-        education: 'МГУ, Факультет ВМК',
-        relatives: ['Смирнова Анна (супруга)', 'Смирнов Пётр (отец)', 'Смирнова Ольга (мать)']
-      });
-      setIsSearching(false);
-      
-      if (searchForm.name) {
-        setSearchHistory(prev => [{
-          name: searchForm.name,
-          date: 'Только что'
-        }, ...prev.slice(0, 4)]);
-      }
-    }, 1500);
+  const handleTap = () => {
+    setBalance(prev => prev + 1);
+    setIsAnimating(true);
+    setTimeout(() => setIsAnimating(false), 300);
   };
 
+  const leaderboardData = [
+    { name: 'Александр К.', amount: 15420, avatar: 'АК' },
+    { name: 'Мария В.', amount: 12850, avatar: 'МВ' },
+    { name: 'Дмитрий П.', amount: 11200, avatar: 'ДП' },
+    { name: 'Елена С.', amount: 9870, avatar: 'ЕС' },
+    { name: 'Игорь Т.', amount: 8650, avatar: 'ИТ' },
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      <div className="container max-w-6xl mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-              <Icon name="Search" size={24} className="text-white" />
-            </div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-              PeopleSearch
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/10 pb-20">
+      <div className="container max-w-md mx-auto px-4 py-6">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+              TapRuble
             </h1>
+            <p className="text-sm text-muted-foreground">Заработай кликом</p>
           </div>
-          <p className="text-muted-foreground text-lg">
-            Найдите информацию о человеке по имени, стране и номеру телефона
-          </p>
+          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-card border border-primary/20">
+            <Icon name="Wallet" size={18} className="text-primary" />
+            <span className="font-bold text-lg">{balance} ₽</span>
+          </div>
         </div>
 
-        {/* Search Form */}
-        <Card className="max-w-4xl mx-auto mb-8 p-8 bg-card border-primary/20">
-          <div className="grid md:grid-cols-3 gap-4 mb-6">
-            <div>
-              <label className="text-sm font-medium mb-2 block">Имя и Фамилия</label>
-              <Input
-                placeholder="Иван Смирнов"
-                value={searchForm.name}
-                onChange={(e) => setSearchForm({...searchForm, name: e.target.value})}
-                className="bg-muted border-input"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium mb-2 block">Страна</label>
-              <Input
-                placeholder="Россия"
-                value={searchForm.country}
-                onChange={(e) => setSearchForm({...searchForm, country: e.target.value})}
-                className="bg-muted border-input"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium mb-2 block">Номер телефона</label>
-              <Input
-                placeholder="+7 (999) 123-45-67"
-                value={searchForm.phone}
-                onChange={(e) => setSearchForm({...searchForm, phone: e.target.value})}
-                className="bg-muted border-input"
-              />
-            </div>
-          </div>
-          
-          <Button 
-            onClick={handleSearch}
-            disabled={isSearching}
-            className="w-full bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white"
-            size="lg"
-          >
-            {isSearching ? (
-              <>
-                <Icon name="Loader2" size={20} className="mr-2 animate-spin" />
-                Поиск...
-              </>
-            ) : (
-              <>
-                <Icon name="Search" size={20} className="mr-2" />
-                Найти информацию
-              </>
-            )}
-          </Button>
-        </Card>
-
-        <div className="grid lg:grid-cols-3 gap-6">
-          {/* Search Results */}
-          <div className="lg:col-span-2">
-            {searchResult ? (
-              <div className="space-y-6 animate-fade-in">
-                {/* Main Profile Card */}
-                <Card className="p-6 bg-card border-primary/20">
-                  <div className="flex items-start gap-6 mb-6">
-                    <Avatar className="w-24 h-24">
-                      <AvatarFallback className="bg-gradient-to-br from-primary to-secondary text-white text-2xl">
-                        {searchResult.name.split(' ').map(n => n[0]).join('')}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <h2 className="text-3xl font-bold mb-2">{searchResult.name}</h2>
-                      <div className="flex flex-wrap gap-2 mb-4">
-                        <Badge variant="secondary" className="flex items-center gap-1">
-                          <Icon name="MapPin" size={14} />
-                          {searchResult.city}, {searchResult.country}
-                        </Badge>
-                        <Badge variant="outline">{searchResult.age} лет</Badge>
+        <div className="mb-8 animate-fade-in">
+          {page === 'home' && (
+            <div className="flex flex-col items-center gap-8">
+              <Card className="w-full p-6 bg-gradient-to-br from-card via-card to-primary/5 border-primary/20">
+                <div className="text-center mb-6">
+                  <h2 className="text-3xl font-bold mb-2">Твой баланс</h2>
+                  <p className="text-5xl font-black bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+                    {balance} ₽
+                  </p>
+                </div>
+                
+                <div className="flex justify-center">
+                  <button
+                    onClick={handleTap}
+                    className={`relative w-64 h-64 rounded-full bg-gradient-to-br from-primary via-secondary to-accent p-1 transition-all hover:scale-105 active:scale-95 ${
+                      isAnimating ? 'animate-pulse-scale' : ''
+                    }`}
+                  >
+                    <div className="w-full h-full rounded-full bg-background/10 backdrop-blur-sm flex items-center justify-center">
+                      <div className="text-center">
+                        <Icon name="Hand" size={64} className="mx-auto mb-2 text-white drop-shadow-lg" />
+                        <span className="text-2xl font-bold text-white drop-shadow-lg">TAP!</span>
                       </div>
-                      <p className="text-muted-foreground">{searchResult.occupation}</p>
+                    </div>
+                  </button>
+                </div>
+
+                <div className="mt-6 grid grid-cols-2 gap-4">
+                  <div className="text-center p-3 rounded-lg bg-muted/50">
+                    <p className="text-sm text-muted-foreground">Всего кликов</p>
+                    <p className="text-xl font-bold">{balance}</p>
+                  </div>
+                  <div className="text-center p-3 rounded-lg bg-muted/50">
+                    <p className="text-sm text-muted-foreground">От рефералов</p>
+                    <p className="text-xl font-bold">{referralEarnings.toFixed(2)} ₽</p>
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="w-full p-4 bg-gradient-to-r from-accent/20 to-secondary/20 border-accent/30">
+                <div className="flex items-start gap-3">
+                  <Icon name="Gift" size={24} className="text-accent mt-1" />
+                  <div>
+                    <h3 className="font-bold mb-1">Реферальная программа</h3>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Получай 10% от заработка каждого приглашённого друга
+                    </p>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="border-accent/50 hover:bg-accent/10"
+                      onClick={() => setPage('profile')}
+                    >
+                      Пригласить друзей
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            </div>
+          )}
+
+          {page === 'leaderboard' && (
+            <div>
+              <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+                <Icon name="Trophy" size={28} className="text-accent" />
+                Таблица лидеров
+              </h2>
+              <div className="space-y-3">
+                {leaderboardData.map((user, index) => (
+                  <Card key={index} className="p-4 bg-card border-primary/20 hover:border-primary/40 transition-all">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Badge 
+                          variant="outline" 
+                          className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                            index === 0 ? 'bg-accent text-accent-foreground border-accent' :
+                            index === 1 ? 'bg-secondary/30 border-secondary' :
+                            index === 2 ? 'bg-primary/30 border-primary' :
+                            'bg-muted border-muted-foreground/30'
+                          }`}
+                        >
+                          {index + 1}
+                        </Badge>
+                        <Avatar>
+                          <AvatarFallback className="bg-gradient-to-br from-primary to-secondary text-white">
+                            {user.avatar}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-semibold">{user.name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {user.amount.toLocaleString()} ₽
+                          </p>
+                        </div>
+                      </div>
+                      {index < 3 && <Icon name="Award" size={24} className="text-accent" />}
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {page === 'profile' && (
+            <div>
+              <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+                <Icon name="User" size={28} className="text-primary" />
+                Профиль
+              </h2>
+              
+              <Card className="p-6 mb-4 bg-gradient-to-br from-card to-primary/5 border-primary/20">
+                <div className="flex items-center gap-4 mb-6">
+                  <Avatar className="w-20 h-20">
+                    <AvatarFallback className="bg-gradient-to-br from-primary via-secondary to-accent text-white text-2xl">
+                      ТЫ
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <h3 className="text-xl font-bold">Твой аккаунт</h3>
+                    <p className="text-sm text-muted-foreground">ID: {Math.random().toString(36).substr(2, 9).toUpperCase()}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                  <div className="p-4 rounded-lg bg-muted/50 text-center">
+                    <p className="text-sm text-muted-foreground mb-1">Баланс</p>
+                    <p className="text-2xl font-bold">{balance} ₽</p>
+                  </div>
+                  <div className="p-4 rounded-lg bg-muted/50 text-center">
+                    <p className="text-sm text-muted-foreground mb-1">От рефералов</p>
+                    <p className="text-2xl font-bold">{referralEarnings.toFixed(2)} ₽</p>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Твоя реферальная ссылка</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={`taprubles.com/ref/${referralCode}`}
+                        readOnly
+                        className="flex-1 px-4 py-2 rounded-lg bg-muted border border-input text-sm"
+                      />
+                      <Button size="sm" className="bg-gradient-to-r from-primary to-secondary">
+                        <Icon name="Copy" size={16} />
+                      </Button>
                     </div>
                   </div>
 
-                  <Tabs defaultValue="contacts" className="w-full">
-                    <TabsList className="grid w-full grid-cols-4">
-                      <TabsTrigger value="contacts">Контакты</TabsTrigger>
-                      <TabsTrigger value="social">Соцсети</TabsTrigger>
-                      <TabsTrigger value="education">Образование</TabsTrigger>
-                      <TabsTrigger value="relatives">Родственники</TabsTrigger>
-                    </TabsList>
-
-                    <TabsContent value="contacts" className="space-y-4 mt-4">
-                      <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50">
-                        <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                          <Icon name="Phone" size={20} className="text-primary" />
-                        </div>
-                        <div>
-                          <p className="text-sm text-muted-foreground">Телефон</p>
-                          <p className="font-semibold">{searchResult.phone}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50">
-                        <div className="w-10 h-10 rounded-full bg-secondary/20 flex items-center justify-center">
-                          <Icon name="Mail" size={20} className="text-secondary" />
-                        </div>
-                        <div>
-                          <p className="text-sm text-muted-foreground">Email</p>
-                          <p className="font-semibold">{searchResult.email}</p>
-                        </div>
-                      </div>
-                    </TabsContent>
-
-                    <TabsContent value="social" className="space-y-3 mt-4">
-                      {searchResult.socialMedia.facebook && (
-                        <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
-                          <div className="flex items-center gap-3">
-                            <Icon name="Facebook" size={20} className="text-primary" />
-                            <span>Facebook</span>
-                          </div>
-                          <span className="text-sm text-muted-foreground">{searchResult.socialMedia.facebook}</span>
-                        </div>
-                      )}
-                      {searchResult.socialMedia.instagram && (
-                        <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
-                          <div className="flex items-center gap-3">
-                            <Icon name="Instagram" size={20} className="text-secondary" />
-                            <span>Instagram</span>
-                          </div>
-                          <span className="text-sm text-muted-foreground">{searchResult.socialMedia.instagram}</span>
-                        </div>
-                      )}
-                      {searchResult.socialMedia.linkedin && (
-                        <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
-                          <div className="flex items-center gap-3">
-                            <Icon name="Linkedin" size={20} className="text-accent" />
-                            <span>LinkedIn</span>
-                          </div>
-                          <span className="text-sm text-muted-foreground">{searchResult.socialMedia.linkedin}</span>
-                        </div>
-                      )}
-                      {searchResult.socialMedia.twitter && (
-                        <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
-                          <div className="flex items-center gap-3">
-                            <Icon name="Twitter" size={20} className="text-primary" />
-                            <span>Twitter</span>
-                          </div>
-                          <span className="text-sm text-muted-foreground">{searchResult.socialMedia.twitter}</span>
-                        </div>
-                      )}
-                    </TabsContent>
-
-                    <TabsContent value="education" className="mt-4">
-                      <div className="p-4 rounded-lg bg-muted/50">
-                        <div className="flex items-start gap-3">
-                          <Icon name="GraduationCap" size={24} className="text-primary mt-1" />
-                          <div>
-                            <h4 className="font-semibold mb-1">Образование</h4>
-                            <p className="text-muted-foreground">{searchResult.education}</p>
-                          </div>
-                        </div>
-                      </div>
-                    </TabsContent>
-
-                    <TabsContent value="relatives" className="space-y-2 mt-4">
-                      {searchResult.relatives.map((relative, index) => (
-                        <div key={index} className="flex items-center gap-3 p-4 rounded-lg bg-muted/50">
-                          <Icon name="Users" size={20} className="text-secondary" />
-                          <span>{relative}</span>
-                        </div>
-                      ))}
-                    </TabsContent>
-                  </Tabs>
-                </Card>
-              </div>
-            ) : (
-              <Card className="p-12 text-center bg-card border-dashed border-2 border-muted">
-                <Icon name="SearchX" size={48} className="mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-xl font-semibold mb-2">Начните поиск</h3>
-                <p className="text-muted-foreground">
-                  Заполните форму выше и нажмите кнопку поиска, чтобы найти информацию о человеке
-                </p>
+                  <Card className="p-4 bg-gradient-to-r from-secondary/20 to-primary/20 border-secondary/30">
+                    <h4 className="font-bold mb-2 flex items-center gap-2">
+                      <Icon name="Users" size={18} className="text-secondary" />
+                      Реферальная программа
+                    </h4>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Приглашай друзей и получай 10% от их заработка навсегда
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Приглашено друзей:</span>
+                      <Badge variant="secondary">3 человека</Badge>
+                    </div>
+                  </Card>
+                </div>
               </Card>
-            )}
-          </div>
+            </div>
+          )}
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Search History */}
-            <Card className="p-6 bg-card border-primary/20">
-              <h3 className="font-bold mb-4 flex items-center gap-2">
-                <Icon name="History" size={20} className="text-primary" />
-                История поиска
-              </h3>
-              <div className="space-y-3">
-                {searchHistory.map((item, index) => (
-                  <div 
-                    key={index}
-                    className="p-3 rounded-lg bg-muted/50 hover:bg-muted cursor-pointer transition-colors"
-                  >
-                    <p className="font-medium text-sm">{item.name}</p>
-                    <p className="text-xs text-muted-foreground">{item.date}</p>
-                  </div>
-                ))}
-              </div>
-            </Card>
-
-            {/* Info Card */}
-            <Card className="p-6 bg-gradient-to-br from-primary/10 to-secondary/10 border-primary/30">
-              <div className="flex gap-3">
-                <Icon name="Info" size={20} className="text-primary mt-1" />
-                <div>
-                  <h4 className="font-bold mb-2">Важная информация</h4>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Все данные получены из публичных источников и социальных сетей.
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Сервис предоставляет информацию исключительно в ознакомительных целях.
+          {page === 'withdraw' && (
+            <div>
+              <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+                <Icon name="ArrowUpRight" size={28} className="text-accent" />
+                Вывод средств
+              </h2>
+              
+              <Card className="p-6 mb-4 bg-gradient-to-br from-card to-accent/5 border-accent/20">
+                <div className="mb-6">
+                  <p className="text-sm text-muted-foreground mb-2">Доступно для вывода</p>
+                  <p className="text-4xl font-black bg-gradient-to-r from-accent to-secondary bg-clip-text text-transparent">
+                    {balance} ₽
                   </p>
                 </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Сумма вывода</label>
+                    <input
+                      type="number"
+                      placeholder="Введите сумму"
+                      className="w-full px-4 py-3 rounded-lg bg-muted border border-input"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Номер кошелька</label>
+                    <input
+                      type="text"
+                      placeholder="Введите номер кошелька"
+                      className="w-full px-4 py-3 rounded-lg bg-muted border border-input"
+                    />
+                  </div>
+
+                  <Button className="w-full bg-gradient-to-r from-accent to-secondary hover:opacity-90">
+                    <Icon name="Send" size={18} className="mr-2" />
+                    Вывести средства
+                  </Button>
+                </div>
+              </Card>
+
+              <Card className="p-4 bg-muted/30 border-muted">
+                <div className="flex gap-3">
+                  <Icon name="Info" size={20} className="text-muted-foreground mt-0.5" />
+                  <div className="text-sm text-muted-foreground">
+                    <p className="mb-2">Минимальная сумма вывода: 100 ₽</p>
+                    <p>Время обработки: 1-3 рабочих дня</p>
+                  </div>
+                </div>
+              </Card>
+            </div>
+          )}
+
+          {page === 'wallet' && (
+            <div>
+              <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+                <Icon name="Wallet" size={28} className="text-primary" />
+                Кошелёк
+              </h2>
+              
+              <Card className="p-6 mb-4 bg-gradient-to-br from-primary/10 to-secondary/10 border-primary/20">
+                <div className="text-center mb-6">
+                  <p className="text-sm text-muted-foreground mb-2">Общий баланс</p>
+                  <p className="text-5xl font-black bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent mb-4">
+                    {(balance + referralEarnings).toFixed(2)} ₽
+                  </p>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                        <Icon name="MousePointerClick" size={20} className="text-primary" />
+                      </div>
+                      <div>
+                        <p className="font-semibold">От кликов</p>
+                        <p className="text-xs text-muted-foreground">Заработано тапами</p>
+                      </div>
+                    </div>
+                    <p className="font-bold text-lg">{balance} ₽</p>
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-secondary/20 flex items-center justify-center">
+                        <Icon name="Users" size={20} className="text-secondary" />
+                      </div>
+                      <div>
+                        <p className="font-semibold">От рефералов</p>
+                        <p className="text-xs text-muted-foreground">10% комиссия</p>
+                      </div>
+                    </div>
+                    <p className="font-bold text-lg">{referralEarnings.toFixed(2)} ₽</p>
+                  </div>
+                </div>
+              </Card>
+
+              <div className="grid grid-cols-2 gap-3">
+                <Button 
+                  variant="outline" 
+                  className="border-primary/50 hover:bg-primary/10"
+                  onClick={() => setPage('withdraw')}
+                >
+                  <Icon name="ArrowUpRight" size={18} className="mr-2" />
+                  Вывести
+                </Button>
+                <Button 
+                  variant="outline"
+                  className="border-secondary/50 hover:bg-secondary/10"
+                >
+                  <Icon name="History" size={18} className="mr-2" />
+                  История
+                </Button>
               </div>
-            </Card>
-          </div>
+            </div>
+          )}
         </div>
       </div>
+
+      <nav className="fixed bottom-0 left-0 right-0 bg-card/80 backdrop-blur-lg border-t border-border">
+        <div className="container max-w-md mx-auto px-4">
+          <div className="flex items-center justify-around py-3">
+            <button
+              onClick={() => setPage('home')}
+              className={`flex flex-col items-center gap-1 transition-colors ${
+                page === 'home' ? 'text-primary' : 'text-muted-foreground'
+              }`}
+            >
+              <Icon name="Home" size={24} />
+              <span className="text-xs font-medium">Главная</span>
+            </button>
+            
+            <button
+              onClick={() => setPage('leaderboard')}
+              className={`flex flex-col items-center gap-1 transition-colors ${
+                page === 'leaderboard' ? 'text-primary' : 'text-muted-foreground'
+              }`}
+            >
+              <Icon name="Trophy" size={24} />
+              <span className="text-xs font-medium">Лидеры</span>
+            </button>
+            
+            <button
+              onClick={() => setPage('wallet')}
+              className={`flex flex-col items-center gap-1 transition-colors ${
+                page === 'wallet' ? 'text-primary' : 'text-muted-foreground'
+              }`}
+            >
+              <Icon name="Wallet" size={24} />
+              <span className="text-xs font-medium">Кошелёк</span>
+            </button>
+            
+            <button
+              onClick={() => setPage('withdraw')}
+              className={`flex flex-col items-center gap-1 transition-colors ${
+                page === 'withdraw' ? 'text-primary' : 'text-muted-foreground'
+              }`}
+            >
+              <Icon name="ArrowUpRight" size={24} />
+              <span className="text-xs font-medium">Вывод</span>
+            </button>
+            
+            <button
+              onClick={() => setPage('profile')}
+              className={`flex flex-col items-center gap-1 transition-colors ${
+                page === 'profile' ? 'text-primary' : 'text-muted-foreground'
+              }`}
+            >
+              <Icon name="User" size={24} />
+              <span className="text-xs font-medium">Профиль</span>
+            </button>
+          </div>
+        </div>
+      </nav>
     </div>
   );
 };
